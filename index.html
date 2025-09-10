@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>이차함수 계수 맞추기 게임</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b6b, #feca57);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .game-section {
+            display: none;
+        }
+
+        .game-section.active {
+            display: block;
+        }
+
+        .start-section {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .start-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+
+        .name-input {
+            margin-bottom: 30px;
+        }
+
+        .name-input input {
+            padding: 15px;
+            font-size: 1.2em;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            width: 300px;
+            max-width: 100%;
+            text-align: center;
+        }
+
+        .name-input input:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #eee;
+            border-radius: 5px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #feca57);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .problem-card {
+            background: linear-gradient(135deg, #f8f9ff, #f0f2ff);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 2px solid #e1e8ff;
+            text-align: center;
+        }
+
+        .problem-title {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .function-display {
+            font-size: 2em;
+            color: #667eea;
+            font-weight: bold;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .canvas-container {
+            margin: 30px 0;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            overflow: hidden;
+            background: white;
+        }
+
+        .input-group {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .coefficient-input {
+            text-align: center;
+        }
+
+        .coefficient-input label {
+            display: block;
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 5px;
+            font-size: 1.1em;
+        }
+
+        .coefficient-input input {
+            width: 80px;
+            padding: 10px;
+            font-size: 1.2em;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .coefficient-input input:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+
+        .feedback {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .feedback.correct {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .feedback.incorrect {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .score-display {
+            background: linear-gradient(135deg, #ff6b6b, #feca57);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .score-display h3 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .score-number {
+            font-size: 3em;
+            font-weight: bold;
+        }
+
+        .results-section {
+            text-align: center;
+        }
+
+        .final-score {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .final-score h2 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        .leaderboard {
+            background: #f8f9ff;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .leaderboard h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .rank-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: white;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+        }
+
+        .rank-item.current-player {
+            background: linear-gradient(135deg, #fff3cd, #fef9e7);
+            border-left-color: #feca57;
+            font-weight: bold;
+        }
+
+        .rank-number {
+            background: #667eea;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 50%;
+            font-weight: bold;
+            min-width: 40px;
+        }
+
+        .rank-item.current-player .rank-number {
+            background: #feca57;
+        }
+
+        .difficulty-indicator {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .difficulty-easy {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .difficulty-normal {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .difficulty-hard {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .difficulty-expert {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        .bounce {
+            animation: bounce 1s ease;
+        }
+
+        @media (max-width: 768px) {
+            .input-group {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .function-display {
+                font-size: 1.5em;
+            }
+            
+            .name-input input {
+                width: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📈 이차함수 계수 맞추기</h1>
+            <p>그래프를 보고 이차함수의 계수 a, b, c를 맞춰보세요!</p>
+        </div>
+
+        <div class="main-content">
+            <!-- 시작 화면 -->
+            <div class="game-section active" id="startSection">
+                <div class="start-section">
+                    <h2>🎯 게임 시작하기</h2>
+                    <p style="margin-bottom: 30px; color: #666; font-size: 1.1em;">
+                        3문제를 풀고 여러분의 실력을 확인해보세요!<br>
+                        정답 개수에 따라 다음 단계 문제의 난이도가 달라집니다.
+                    </p>
+                    <div class="name-input">
+                        <input type="text" id="playerName" placeholder="이름을 입력하세요" maxlength="20">
+                    </div>
+                    <button class="btn" onclick="startGame()">🚀 게임 시작</button>
+                </div>
+            </div>
+
+            <!-- 게임 화면 -->
+            <div class="game-section" id="gameSection">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                
+                <div class="score-display">
+                    <h3>현재 점수</h3>
+                    <div class="score-number" id="currentScore">0</div>
+                </div>
+
+                <div class="problem-card">
+                    <div class="difficulty-indicator" id="difficultyIndicator">보통</div>
+                    <div class="problem-title" id="problemTitle">문제 1/3</div>
+                    <div class="function-display" id="functionDisplay">y = ax² + bx + c</div>
+                    
+                    <div class="canvas-container">
+                        <canvas id="graphCanvas" width="600" height="400"></canvas>
+                    </div>
+
+                    <div class="input-group">
+                        <div class="coefficient-input">
+                            <label for="inputA">a</label>
+                            <input type="number" id="inputA" step="any" placeholder="0">
+                        </div>
+                        <div class="coefficient-input">
+                            <label for="inputB">b</label>
+                            <input type="number" id="inputB" step="any" placeholder="0">
+                        </div>
+                        <div class="coefficient-input">
+                            <label for="inputC">c</label>
+                            <input type="number" id="inputC" step="any" placeholder="0">
+                        </div>
+                    </div>
+
+                    <button class="btn" onclick="checkAnswer()" id="submitBtn">✅ 정답 확인</button>
+                    
+                    <div class="feedback" id="feedback" style="display: none;"></div>
+                </div>
+            </div>
+
+            <!-- 결과 화면 -->
+            <div class="game-section" id="resultsSection">
+                <div class="results-section">
+                    <div class="final-score">
+                        <h2>🎉 게임 완료!</h2>
+                        <div style="font-size: 2em; margin: 20px 0;">
+                            최종 점수: <span id="finalScore">0</span>점
+                        </div>
+                        <div id="performanceMessage"></div>
+                    </div>
+
+                    <div class="leaderboard">
+                        <h3>🏆 순위표</h3>
+                        <div id="leaderboardList"></div>
+                    </div>
+
+                    <button class="btn" onclick="restartGame()" style="margin-top: 20px;">🔄 다시 도전하기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 게임 상태 변수들
+        let currentPlayer = '';
+        let currentProblem = 0;
+        let currentScore = 0;
+        let problems = [];
+        let results = [];
+        let leaderboard = JSON.parse(localStorage.getItem('quadratic_leaderboard') || '[]');
+
+        // 난이도별 계수 범위
+        const difficultySettings = {
+            easy: { a: [-2, 2], b: [-4, 4], c: [-3, 3], tolerance: 0.5 },
+            normal: { a: [-3, 3], b: [-6, 6], c: [-5, 5], tolerance: 0.3 },
+            hard: { a: [-5, 5], b: [-8, 8], c: [-8, 8], tolerance: 0.2 },
+            expert: { a: [-8, 8], b: [-12, 12], c: [-10, 10], tolerance: 0.1 }
+        };
+
+        // 게임 시작
+        function startGame() {
+            const nameInput = document.getElementById('playerName');
+            if (!nameInput.value.trim()) {
+                nameInput.focus();
+                nameInput.style.borderColor = '#ff6b6b';
+                return;
+            }
+            
+            currentPlayer = nameInput.value.trim();
+            currentProblem = 0;
+            currentScore = 0;
+            problems = [];
+            results = [];
+            
+            // 초기 3문제 생성 (보통 난이도)
+            for (let i = 0; i < 3; i++) {
+                problems.push(generateProblem('normal'));
+            }
+            
+            showSection('gameSection');
+            showNextProblem();
+        }
+
+        // 문제 생성
+        function generateProblem(difficulty) {
+            const settings = difficultySettings[difficulty];
+            let a, b, c;
+            
+            do {
+                a = randomInRange(settings.a[0], settings.a[1]);
+                if (difficulty === 'easy') {
+                    a = Math.round(a);
+                }
+            } while (a === 0);
+            
+            b = randomInRange(settings.b[0], settings.b[1]);
+            c = randomInRange(settings.c[0], settings.c[1]);
+            
+            if (difficulty === 'easy') {
+                b = Math.round(b);
+                c = Math.round(c);
+            }
+
+            return {
+                a: Math.round(a * 100) / 100,
+                b: Math.round(b * 100) / 100,
+                c: Math.round(c * 100) / 100,
+                difficulty: difficulty,
+                tolerance: settings.tolerance
+            };
+        }
+
+        // 범위 내 랜덤 수 생성
+        function randomInRange(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+
+        // 다음 문제 표시
+        function showNextProblem() {
+            const problem = problems[currentProblem];
+            
+            // UI 업데이트
+            document.getElementById('problemTitle').textContent = `문제 ${currentProblem + 1}/${problems.length}`;
+            document.getElementById('currentScore').textContent = currentScore;
+            document.getElementById('progressFill').style.width = `${(currentProblem / problems.length) * 100}%`;
+            
+            // 난이도 표시
+            const difficultyIndicator = document.getElementById('difficultyIndicator');
+            const difficultyNames = {
+                easy: '쉬움',
+                normal: '보통', 
+                hard: '어려움',
+                expert: '고수'
+            };
+            
+            difficultyIndicator.textContent = difficultyNames[problem.difficulty];
+            difficultyIndicator.className = `difficulty-indicator difficulty-${problem.difficulty}`;
+            
+            // 입력 필드 초기화
+            document.getElementById('inputA').value = '';
+            document.getElementById('inputB').value = '';
+            document.getElementById('inputC').value = '';
+            document.getElementById('feedback').style.display = 'none';
+            document.getElementById('submitBtn').textContent = '✅ 정답 확인';
+            document.getElementById('submitBtn').disabled = false;
+            
+            // 그래프 그리기
+            drawGraph(problem);
+        }
+
+        // 그래프 그리기
+        function drawGraph(problem) {
+            const canvas = document.getElementById('graphCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // 캔버스 크기 조정
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.width * 0.6;
+            
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // 배경 색칠
+            ctx.fillStyle = '#f8f9fa';
+            ctx.fillRect(0, 0, width, height);
+            
+            // 좌표계 설정
+            const xMin = -10, xMax = 10;
+            const yMin = -10, yMax = 10;
+            
+            const scaleX = width / (xMax - xMin);
+            const scaleY = height / (yMax - yMin);
+            
+            // 좌표 변환 함수
+            function toCanvasX(x) { return (x - xMin) * scaleX; }
+            function toCanvasY(y) { return height - (y - yMin) * scaleY; }
+            
+            // 격자 그리기
+            ctx.strokeStyle = '#e9ecef';
+            ctx.lineWidth = 1;
+            
+            for (let x = xMin; x <= xMax; x++) {
+                if (x !== 0) {
+                    ctx.beginPath();
+                    ctx.moveTo(toCanvasX(x), 0);
+                    ctx.lineTo(toCanvasX(x), height);
+                    ctx.stroke();
+                }
+            }
+            
+            for (let y = yMin; y <= yMax; y++) {
+                if (y !== 0) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, toCanvasY(y));
+                    ctx.lineTo(width, toCanvasY(y));
+                    ctx.stroke();
+                }
+            }
+            
+            // 축 그리기
+            ctx.strokeStyle = '#6c757d';
+            ctx.lineWidth = 2;
+            
+            // x축
+            ctx.beginPath();
+            ctx.moveTo(0, toCanvasY(0));
+            ctx.lineTo(width, toCanvasY(0));
+            ctx.stroke();
+            
+            // y축
+            ctx.beginPath();
+            ctx.moveTo(toCanvasX(0), 0);
+            ctx.lineTo(toCanvasX(0), height);
+            ctx.stroke();
+            
+            // 이차함수 그래프 그리기
+            ctx.strokeStyle = '#667eea';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            
+            for (let x = xMin; x <= xMax; x += 0.1) {
+                const y = problem.a * x * x + problem.b * x + problem.c;
+                if (y >= yMin && y <= yMax) {
+                    if (x === xMin) {
+                        ctx.moveTo(toCanvasX(x), toCanvasY(y));
+                    } else {
+                        ctx.lineTo(toCanvasX(x), toCanvasY(y));
+                    }
+                }
+            }
+            ctx.stroke();
+            
+            // 특별한 점들 표시
+            const vertex_x = -problem.b / (2 * problem.a);
+            const vertex_y = problem.a * vertex_x * vertex_x + problem.b * vertex_x + problem.c;
+            
+            if (vertex_x >= xMin && vertex_x <= xMax && vertex_y >= yMin && vertex_y <= yMax) {
+                ctx.fillStyle = '#ff6b6b';
+                ctx.beginPath();
+                ctx.arc(toCanvasX(vertex_x), toCanvasY(vertex_y), 5, 0, 2 * Math.PI);
+                ctx.fill();
+            }
+        }
+
+        // 정답 확인
+        function checkAnswer() {
+            const problem = problems[currentProblem];
+            const userA = parseFloat(document.getElementById('inputA').value);
+            const userB = parseFloat(document.getElementById('inputB').value);
+            const userC = parseFloat(document.getElementById('inputC').value);
+            
+            if (isNaN(userA) || isNaN(userB) || isNaN(userC)) {
+                alert('모든 계수를 입력해주세요!');
+                return;
+            }
+            
+            const tolerance = problem.tolerance;
+            const isCorrect = Math.abs(userA - problem.a) <= tolerance &&
+                            Math.abs(userB - problem.b) <= tolerance &&
+                            Math.abs(userC - problem.c) <= tolerance;
+            
+            const feedback = document.getElementById('feedback');
+            feedback.style.display = 'block';
+            
+            if (isCorrect) {
+                currentScore++;
+                feedback.className = 'feedback correct';
+                feedback.innerHTML = `🎉 정답입니다!<br>정답: y = ${problem.a}x² + ${problem.b}x + ${problem.c}`;
+                results.push(true);
+                
+                // 정답 애니메이션
+                document.querySelector('.score-display').classList.add('bounce');
+                setTimeout(() => {
+                    document.querySelector('.score-display').classList.remove('bounce');
+                }, 1000);
+            } else {
+                feedback.className = 'feedback incorrect';
+                feedback.innerHTML = `❌ 틀렸습니다.<br>정답: y = ${problem.a}x² + ${problem.b}x + ${problem.c}<br>허용 오차: ±${tolerance}`;
+                results.push(false);
+                
+                // 틀린 답 애니메이션
+                document.querySelector('.problem-card').classList.add('shake');
+                setTimeout(() => {
+                    document.querySelector('.problem-card').classList.remove('shake');
+                }, 500);
+            }
+            
+            document.getElementById('currentScore').textContent = currentScore;
+            document.getElementById('submitBtn').textContent = '➡️ 다음 문제';
+            document.getElementById('submitBtn').disabled = false;
+            document.getElementById('submitBtn').onclick = nextProblem;
+        }
+
+        // 다음 문제로
+        function nextProblem() {
+            currentProblem++;
+            
+            if (currentProblem < problems.length) {
+                document.getElementById('submitBtn').onclick = checkAnswer;
+                showNextProblem();
+            } else {
+                // 첫 3문제 완료 후 추가 문제 생성
+                if (problems.length === 3) {
+                    generateAdaptiveProblem();
+                    showNextProblem();
+                } else {
+                    showResults();
+                }
+            }
+        }
+
+        // 적응형 문제 생성
+        function generateAdaptiveProblem() {
+            const correctCount = results.filter(r => r).length;
+            let difficulty;
+            
+            if (correctCount === 3) {
+                difficulty = 'expert';
+                currentScore += 3;
+            } else if (correctCount === 2) {
+                difficulty = 'normal';
+                currentScore += 2;
+            } else if (correctCount === 1) {
+                difficulty = 'easy';
+                currentScore += 1;
+            } else {
+                difficulty = 'easy';
+            }
+            
+            problems.push(generateProblem(difficulty));
+        }
+
+        // 결과 표시
+        function showResults() {
+            const finalCorrect = results.filter(r => r).length;
+            if (results[3]) currentScore++; // 마지막 문제 점수 추가
+            
+            document.getElementById('finalScore').textContent = currentScore;
+            
+            // 성과 메시지
+            const performanceMessage = document.getElementById('performanceMessage');
+            if (currentScore >= 4) {
+                performanceMessage.innerHTML = '🏆 완벽합니다! 이차함수 마스터!';
+            } else if (currentScore >= 3) {
+                performanceMessage.innerHTML = '👏 훌륭해요! 실력이 뛰어나네요!';
+            } else if (currentScore >= 2) {
+                performanceMessage.innerHTML = '😊 좋아요! 조금 더 연습하면 완벽해질 거예요!';
+            } else {
+                performanceMessage.innerHTML = '💪 화이팅! 연습하면 분명 늘어날 거예요!';
+            }
+            
+            // 리더보드 업데이트
+            updateLeaderboard();
+            
+            showSection('resultsSection');
+        }
+
+        // 리더보드 업데이트
+        function updateLeaderboard() {
+            // 기존 기록 찾기
+            const existingIndex = leaderboard.findIndex(entry => entry.name === currentPlayer);
+            
+            if (existingIndex !== -1) {
+                // 더 높은 점수인 경우만 업데이트
+                if (currentScore > leaderboard[existingIndex].score) {
+                    leaderboard[existingIndex].score = currentScore;
+                    leaderboard[existingIndex].date = new Date().toLocaleString('ko-KR');
+                }
+            } else {
+                // 새 기록 추가
+                leaderboard.push({
+                    name: currentPlayer,
+                    score: currentScore,
+                    date: new Date().toLocaleString('ko-KR')
+                });
+            }
+            
+            // 점수순 정렬
+            leaderboard.sort((a, b) => b.score - a.score);
+            
+            // 상위 10명만 유지
+            if (leaderboard.length > 10) {
+                leaderboard = leaderboard.slice(0, 10);
+            }
+            
+            // 로컬 스토리지에 저장
+            localStorage.setItem('quadratic_leaderboard', JSON.stringify(leaderboard));
+            
+            // 리더보드 표시
+            displayLeaderboard();
+        }
+
+        // 리더보드 표시
+        function displayLeaderboard() {
+            const leaderboardList = document.getElementById('leaderboardList');
+            
+            if (leaderboard.length === 0) {
+                leaderboardList.innerHTML = '<p style="text-align: center; color: #999;">아직 기록이 없습니다.</p>';
+                return;
+            }
+            
+            leaderboardList.innerHTML = leaderboard.map((entry, index) => `
+                <div class="rank-item ${entry.name === currentPlayer ? 'current-player' : ''}">
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <div class="rank-number">${index + 1}</div>
+                        <div>
+                            <div style="font-size: 1.1em;">${entry.name}</div>
+                            <div style="font-size: 0.9em; color: #666;">${entry.date}</div>
+                        </div>
+                    </div>
+                    <div style="font-size: 1.2em; font-weight: bold;">${entry.score}점</div>
+                </div>
+            `).join('');
+        }
+
+        // 섹션 표시
+        function showSection(sectionId) {
+            document.querySelectorAll('.game-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
+        }
+
+        // 게임 재시작
+        function restartGame() {
+            showSection('startSection');
+            document.getElementById('playerName').value = currentPlayer;
+        }
+
+        // Enter 키로 게임 시작
+        document.getElementById('playerName').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                startGame();
+            }
+        });
+
+        // 계수 입력에서 Enter 키로 정답 확인
+        ['inputA', 'inputB', 'inputC'].forEach(id => {
+            document.getElementById(id).addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    if (document.getElementById('submitBtn').textContent.includes('정답')) {
+                        checkAnswer();
+                    } else {
+                        nextProblem();
+                    }
+                }
+            });
+        });
+
+        // 초기 리
